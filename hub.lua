@@ -1,22 +1,19 @@
 --[[
 	UI Library: Elegant Black-Purple Gradient with Left Tabs
-	Designed for Roblox
+	Fixed version
 ]]
 
 local UILibrary = {}
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
-local RunService = game:GetService("RunService")
 
 local player = Players.LocalPlayer
 if not player then return UILibrary end
 
--- Utility functions
 local function tween(obj, time, props, easing)
 	easing = easing or Enum.EasingStyle.Quad
-	local tweenInfo = TweenInfo.new(time, easing, Enum.EasingDirection.Out)
-	local t = TweenService:Create(obj, tweenInfo, props)
+	local t = TweenService:Create(obj, TweenInfo.new(time, easing, Enum.EasingDirection.Out), props)
 	t:Play()
 	return t
 end
@@ -29,7 +26,6 @@ local function create(className, props)
 	return obj
 end
 
--- Creates a gradient background
 local function addGradient(frame, colors, rotation)
 	rotation = rotation or 90
 	local gradient = Instance.new("UIGradient")
@@ -39,14 +35,12 @@ local function addGradient(frame, colors, rotation)
 	return gradient
 end
 
--- Main window constructor
 function UILibrary:CreateWindow(config)
 	config = config or {}
 	local title = config.Title or "UI Library"
 	local size = config.Size or UDim2.new(0, 700, 0, 500)
 	local keybind = config.Keybind or Enum.KeyCode.LeftControl
 
-	-- ScreenGui
 	local screenGui = create("ScreenGui", {
 		Name = "UILibrary_ScreenGui",
 		Parent = player:WaitForChild("PlayerGui"),
@@ -54,7 +48,6 @@ function UILibrary:CreateWindow(config)
 		ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 	})
 
-	-- Overlay for modal effects
 	local overlay = create("Frame", {
 		Name = "Overlay",
 		Size = UDim2.new(1, 0, 1, 0),
@@ -64,22 +57,22 @@ function UILibrary:CreateWindow(config)
 		Parent = screenGui
 	})
 
-	-- Main window frame
 	local mainFrame = create("Frame", {
 		Name = "MainFrame",
 		Size = size,
 		Position = UDim2.new(0.5, -size.X.Offset / 2, 0.5, -size.Y.Offset / 2),
-		BackgroundColor3 = Color3.new(0, 0, 0), -- will be covered by gradient
+		BackgroundColor3 = Color3.new(0, 0, 0),
 		BorderSizePixel = 0,
 		ClipsDescendants = true,
 		Parent = screenGui
 	})
-	-- Gradient: black to deep purple
+
 	addGradient(mainFrame, {
 		ColorSequenceKeypoint.new(0, Color3.fromRGB(10, 0, 20)),
 		ColorSequenceKeypoint.new(0.5, Color3.fromRGB(40, 0, 60)),
 		ColorSequenceKeypoint.new(1, Color3.fromRGB(70, 0, 100))
 	}, 135)
+
 	local corner = create("UICorner", { CornerRadius = UDim.new(0, 12), Parent = mainFrame })
 	local stroke = create("UIStroke", {
 		Thickness = 1.5,
@@ -88,7 +81,6 @@ function UILibrary:CreateWindow(config)
 		Parent = mainFrame
 	})
 
-	-- Title bar (draggable)
 	local titleBar = create("Frame", {
 		Name = "TitleBar",
 		Size = UDim2.new(1, 0, 0, 40),
@@ -98,8 +90,6 @@ function UILibrary:CreateWindow(config)
 		Parent = mainFrame
 	})
 	local titleBarCorner = create("UICorner", { CornerRadius = UDim.new(0, 12), Parent = titleBar })
-	-- Cut off bottom corners (optional)
-	-- Instead, add a separate top bar with no bottom rounding; we keep as is but it's fine.
 
 	local titleLabel = create("TextLabel", {
 		Name = "TitleLabel",
@@ -114,7 +104,6 @@ function UILibrary:CreateWindow(config)
 		Parent = titleBar
 	})
 
-	-- Window control buttons
 	local function createControlButton(name, text, posX, color)
 		local btn = create("TextButton", {
 			Name = name,
@@ -127,7 +116,6 @@ function UILibrary:CreateWindow(config)
 			Font = Enum.Font.GothamBold,
 			Parent = titleBar
 		})
-		-- Hover animation
 		btn.MouseEnter:Connect(function()
 			tween(btn, 0.1, { TextColor3 = Color3.new(1, 1, 1) })
 		end)
@@ -141,7 +129,6 @@ function UILibrary:CreateWindow(config)
 	local maxBtn = createControlButton("Maximize", "□", -60, Color3.fromRGB(200, 200, 200))
 	local minBtn = createControlButton("Minimize", "—", -30, Color3.fromRGB(200, 200, 200))
 
-	-- Left panel for tabs
 	local leftPanel = create("Frame", {
 		Name = "LeftPanel",
 		Size = UDim2.new(0, 150, 1, -40),
@@ -152,7 +139,6 @@ function UILibrary:CreateWindow(config)
 		Parent = mainFrame
 	})
 	local leftPanelCorner = create("UICorner", { CornerRadius = UDim.new(0, 12), Parent = leftPanel })
-	-- Separate corner for top-left only? We'll keep as is.
 
 	local tabContainer = create("ScrollingFrame", {
 		Name = "TabContainer",
@@ -167,7 +153,6 @@ function UILibrary:CreateWindow(config)
 		Parent = leftPanel
 	})
 
-	-- Right content area
 	local contentContainer = create("Frame", {
 		Name = "ContentContainer",
 		Size = UDim2.new(1, -160, 1, -50),
@@ -176,7 +161,6 @@ function UILibrary:CreateWindow(config)
 		Parent = mainFrame
 	})
 
-	-- Window data
 	local windowData = {
 		ScreenGui = screenGui,
 		MainFrame = mainFrame,
@@ -216,7 +200,7 @@ function UILibrary:CreateWindow(config)
 		end
 	end)
 
-	-- Resize handle (bottom right)
+	-- Resize handle
 	local resizeHandle = create("Frame", {
 		Name = "ResizeHandle",
 		Size = UDim2.new(0, 20, 0, 20),
@@ -250,7 +234,6 @@ function UILibrary:CreateWindow(config)
 		end
 	end)
 
-	-- Control buttons functionality
 	closeBtn.MouseButton1Click:Connect(function()
 		tween(mainFrame, 0.2, { Size = UDim2.new(0, 0, 0, 0), Position = UDim2.new(0.5, 0, 0.5, 0) }):Completed:Connect(function()
 			screenGui:Destroy()
@@ -280,14 +263,12 @@ function UILibrary:CreateWindow(config)
 		end
 	end)
 
-	-- Hotkey toggle
 	UserInputService.InputBegan:Connect(function(input, gameProcessed)
 		if not gameProcessed and input.KeyCode == keybind then
 			mainFrame.Visible = not mainFrame.Visible
 		end
 	end)
 
-	-- Tab creation method
 	function windowData:AddTab(tabConfig)
 		tabConfig = tabConfig or {}
 		local tabName = tabConfig.Name or "Tab"
@@ -304,7 +285,7 @@ function UILibrary:CreateWindow(config)
 			Parent = self.TabContainer
 		})
 		local btnCorner = create("UICorner", { CornerRadius = UDim.new(0, 8), Parent = tabButton })
-		-- Hover animation
+
 		tabButton.MouseEnter:Connect(function()
 			if self.CurrentTab ~= tab then
 				tween(tabButton, 0.1, { BackgroundColor3 = Color3.fromRGB(50, 0, 70) })
@@ -342,7 +323,6 @@ function UILibrary:CreateWindow(config)
 			Elements = {}
 		}
 
-		-- Click to switch
 		tabButton.MouseButton1Click:Connect(function()
 			if self.CurrentTab then
 				self.CurrentTab.Content.Visible = false
@@ -353,12 +333,10 @@ function UILibrary:CreateWindow(config)
 			self.CurrentTab = tab
 		end)
 
-		-- Helper to add spacing between elements
 		local function getNextY()
 			return #tab.Elements * 45 + 5
 		end
 
-		-- Button component
 		function tab:AddButton(btnConfig)
 			btnConfig = btnConfig or {}
 			local text = btnConfig.Text or "Button"
@@ -386,7 +364,6 @@ function UILibrary:CreateWindow(config)
 			return btn
 		end
 
-		-- Toggle component
 		function tab:AddToggle(togConfig)
 			togConfig = togConfig or {}
 			local text = togConfig.Text or "Toggle"
@@ -450,7 +427,6 @@ function UILibrary:CreateWindow(config)
 			return { SetState = setState, GetState = function() return state end }
 		end
 
-		-- Slider component
 		function tab:AddSlider(sliderConfig)
 			sliderConfig = sliderConfig or {}
 			local text = sliderConfig.Text or "Slider"
@@ -515,6 +491,7 @@ function UILibrary:CreateWindow(config)
 			local function updateFromMouse(mouseX)
 				local absX = sliderBg.AbsolutePosition.X
 				local absW = sliderBg.AbsoluteSize.X
+				if absW == 0 then return end
 				local rel = math.clamp((mouseX - absX) / absW, 0, 1)
 				local val = min + rel * (max - min)
 				if not sliderConfig.AllowDecimals then
@@ -543,7 +520,6 @@ function UILibrary:CreateWindow(config)
 			table.insert(self.Elements, frame)
 		end
 
-		-- Dropdown component
 		function tab:AddDropdown(dropConfig)
 			dropConfig = dropConfig or {}
 			local text = dropConfig.Text or "Dropdown"
@@ -583,7 +559,6 @@ function UILibrary:CreateWindow(config)
 			local btnStroke = create("UIStroke", { Thickness = 1, Color = Color3.fromRGB(140, 0, 255), Transparency = 0.5, Parent = dropBtn })
 
 			dropBtn.MouseButton1Click:Connect(function()
-				-- Create dropdown list
 				local listFrame = create("Frame", {
 					Name = "DropdownList",
 					Size = UDim2.new(0, 120, 0, math.min(#options, 5) * 32),
@@ -615,23 +590,29 @@ function UILibrary:CreateWindow(config)
 					end)
 				end
 
-				-- Close list when clicking outside
 				local function closeOnClick(input)
 					if input.UserInputType == Enum.UserInputType.MouseButton1 then
 						local obj = input.Target
 						if obj and not obj:IsDescendantOf(listFrame) and obj ~= dropBtn then
 							listFrame:Destroy()
-							UserInputService.InputBegan:Connect(closeOnClick)
 						end
 					end
 				end
-				UserInputService.InputBegan:Connect(closeOnClick)
+				local conn
+				conn = UserInputService.InputBegan:Connect(function(input)
+					if input.UserInputType == Enum.UserInputType.MouseButton1 then
+						local obj = input.Target
+						if obj and not obj:IsDescendantOf(listFrame) and obj ~= dropBtn then
+							listFrame:Destroy()
+							conn:Disconnect()
+						end
+					end
+				end)
 			end)
 
 			table.insert(self.Elements, frame)
 		end
 
-		-- Input field component
 		function tab:AddInput(inputConfig)
 			inputConfig = inputConfig or {}
 			local text = inputConfig.Text or "Input"
@@ -680,7 +661,6 @@ function UILibrary:CreateWindow(config)
 			table.insert(self.Elements, frame)
 		end
 
-		-- Paragraph component
 		function tab:AddParagraph(paraConfig)
 			paraConfig = paraConfig or {}
 			local titleText = paraConfig.Title or "Title"
@@ -721,16 +701,15 @@ function UILibrary:CreateWindow(config)
 			table.insert(self.Elements, frame)
 		end
 
-		-- Finalize tab
 		table.insert(self.Tabs, tab)
 		if #self.Tabs == 1 then
-			tabButton.MouseButton1Click:Fire()
+			-- Используем :Click() для программного нажатия, а не :Fire()
+			tabButton:Click()
 		end
 
 		return tab
 	end
 
-	-- Notification system
 	function windowData:Notify(config)
 		config = config or {}
 		local title = config.Title or "Notification"
@@ -782,7 +761,6 @@ function UILibrary:CreateWindow(config)
 		})
 		local timerCorner = create("UICorner", { CornerRadius = UDim.new(0, 2), Parent = timer })
 
-		-- Slide in animation
 		notif.Position = UDim2.new(1, 20, 1, -110)
 		tween(notif, 0.3, { Position = UDim2.new(1, -340, 1, -110) })
 		tween(timer, duration, { Size = UDim2.new(0, 0, 0, 4) }):Completed:Connect(function()
